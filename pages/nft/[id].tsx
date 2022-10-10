@@ -1,9 +1,10 @@
-import React from "react";
-import { useDisconnect, useAddress, useMetamask } from "@thirdweb-dev/react";
+import React, { useEffect, useState } from "react";
+import { useDisconnect, useAddress, useMetamask, useContract } from "@thirdweb-dev/react";
 import { GetServerSideProps } from "next";
 import { sanityClient, urlFor } from "../../sanity";
 import { Collection } from "../../typings";
 import Link from "next/link";
+import { BigNumber } from "ethers";
 
 
 interface Props{
@@ -12,13 +13,30 @@ interface Props{
 
 function NftDropPage({collection}:Props) {
 
+	const [claimedSupply, setClaimedSupply] = useState<number>(0);
+	const [totalSupply, setTotalSupply] = useState<BigNumber>();
+
+	const nftDrop = useContract(collection.address, "nft-drop").contract;
+
 	//Auth
 
 	const connectWithMetamask = useMetamask();
 	const address = useAddress();
 	const disconnect = useDisconnect();
 
-	console.log(address);
+	useEffect(() => {
+		if(!nftDrop) return;
+
+		const fetchNFTDropData = async () => {
+			const claimedNFTs = await nftDrop.getAllClaimed();
+			const total = await nftDrop.totalSupply();
+
+			setClaimedSupply(claimedNFTs.length);
+			console.log(setClaimedSupply(claimedNFTs.length))
+			setTotalSupply(total); 
+		}
+		fetchNFTDropData()
+	},[nftDrop])
 
 	return (
 		<div className="flex h-screen flex-col lg:grid lg:grid-cols-10">
@@ -60,7 +78,7 @@ function NftDropPage({collection}:Props) {
 				<div className="mt-10 flex flex-1 flex-col items-center space-y-6 text-center lg:justify-center lg:space-y-0">
 					<img className="w-80 object-cover pb-10 lg:h-40" src={urlFor(collection.mainImage).url()} alt=""/>
 					<h1 className="text-3xl font-bold lg:text-5xl lg:font-extrabold">{collection.title}</h1>
-					<p className="pt-2 text-xl text-green-500">13/21 Nfts claimed</p>
+					<p className="pt-2 text-xl text-green-500">{claimedSupply}Nfts claimed</p>
 				</div>
 
 				{/* {Mint Button} */}
