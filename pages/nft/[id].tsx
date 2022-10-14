@@ -15,28 +15,62 @@ function NftDropPage({collection}:Props) {
 
 	const [claimedSupply, setClaimedSupply] = useState<number>(0);
 	const [totalSupply, setTotalSupply] = useState<BigNumber>();
-
+	const [priceInEth, setPriceInEth] = useState<string>();
+	const [loading, setLoading] = useState<boolean>(true);
 	const nftDrop = useContract(collection.address, "nft-drop").contract;
 
 	//Auth
-
 	const connectWithMetamask = useMetamask();
 	const address = useAddress();
 	const disconnect = useDisconnect();
 
 	useEffect(() => {
+		if(!nftDrop) return 
+
+		const fetchPrice = async () => {
+			const claimConditions = await nftDrop.claimConditions.getAll();
+			setPriceInEth(claimConditions?.[0]?.currencyMetadata.displayValue);
+		}
+
+		fetchPrice();
+	}, [nftDrop])
+
+	useEffect(() => {
 		if(!nftDrop) return;
 
 		const fetchNFTDropData = async () => {
+			setLoading(true);
 			const claimedNFTs = await nftDrop.getAllClaimed();
 			const total = await nftDrop.totalSupply();
+			console.log(claimedNFTs)
 
 			setClaimedSupply(claimedNFTs.length);
-			console.log(setClaimedSupply(claimedNFTs.length))
+			console.log("here"+setClaimedSupply(claimedNFTs.length))
 			setTotalSupply(total); 
+			setLoading(false);
 		}
 		fetchNFTDropData()
 	},[nftDrop])
+
+	const mintNft = () => {
+		if(!nftDrop || !address) return;
+		const quantity = 1;
+		setLoading(true);
+		nftDrop.claimTo(address, quantity).then(async(tx)=>{
+			const receipt = tx[0].receipt;
+			const claimedTokenId = tx[0].id
+			const claimedNFTs = await tx[0].data
+
+			console.log(receipt)
+			console.log(claimedTokenId)
+			console.log(claimedNFTs)
+		})
+		.catch((err)=>{
+			console.log(err)
+		})
+		.finally(()=>{setLoading(false)
+		})
+	}	
 
 	return (
 		<div className="flex h-screen flex-col lg:grid lg:grid-cols-10">
@@ -78,12 +112,32 @@ function NftDropPage({collection}:Props) {
 				<div className="mt-10 flex flex-1 flex-col items-center space-y-6 text-center lg:justify-center lg:space-y-0">
 					<img className="w-80 object-cover pb-10 lg:h-40" src={urlFor(collection.mainImage).url()} alt=""/>
 					<h1 className="text-3xl font-bold lg:text-5xl lg:font-extrabold">{collection.title}</h1>
-					<p className="pt-2 text-xl text-green-500">{claimedSupply}Nfts claimed</p>
+
+					{loading ? (
+						<p className="animate-pulse pt-2 text-xl text-green-500">Loading...</p>
+					) : (
+						<p className="pt-2 text-xl text-green-500">
+							Claimed {claimedSupply} of {totalSupply?.toString()} NFTS
+						</p>
+					)}
+
+					{loading && (
+						<img className="h-80 w-80 object-contained" src="http://cdn.hackernoon.com/images/0*4Gzjgh9Y7Gu8KEtZ.gif"></img>
+					)}
+				
 				</div>
 
 				{/* {Mint Button} */}
-				<button className="h-16 w-full rounded-full bg-red-600 text-white font-bold">
-					Mint NFT (0.01 eth)
+				<button onClick={mintNft} disabled={loading || claimedSupply === totalSupply?.toNumber() || !address} className="h-16 w-full rounded-full bg-red-600 text-white font-bold disabled:bg-gray-400">
+					{loading ? (
+						<>Loading</>
+					): claimedSupply === totalSupply?.toNumber() ? (
+						<>Sold Out</>
+					) : !address ? (
+						<>Sign in to mint</>
+					) : (
+						<span className="font-bold">Mint NFT ({priceInEth}) ETH</span>
+					)}
 				</button>
 			</div>
 		</div>
