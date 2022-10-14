@@ -5,6 +5,7 @@ import { sanityClient, urlFor } from "../../sanity";
 import { Collection } from "../../typings";
 import Link from "next/link";
 import { BigNumber } from "ethers";
+import toast, { Toaster } from "react-hot-toast";
 
 
 interface Props{
@@ -56,10 +57,30 @@ function NftDropPage({collection}:Props) {
 		if(!nftDrop || !address) return;
 		const quantity = 1;
 		setLoading(true);
+		const notification = toast.loading("Minting NFT...", {
+			style:{
+				background:"white",
+				color:"green",
+				fontWeight:"bolder",
+				fontSize:"17px",
+				padding:"20px"
+			}
+		})
 		nftDrop.claimTo(address, quantity).then(async(tx)=>{
 			const receipt = tx[0].receipt;
 			const claimedTokenId = tx[0].id
 			const claimedNFTs = await tx[0].data
+
+			toast("You have claimed a JIM NFT!", {
+				duration: 8000,
+				style:{
+					background:"green",
+					color:"white",
+					fontWeight:"bolder",
+					fontSize:"17px",
+					padding:"20px"	
+				}
+			})
 
 			console.log(receipt)
 			console.log(claimedTokenId)
@@ -67,13 +88,26 @@ function NftDropPage({collection}:Props) {
 		})
 		.catch((err)=>{
 			console.log(err)
+			toast("Something went wrong", {
+				duration: 8000,
+				style:{
+					background:"red",
+					color:"white",
+					fontWeight:"bolder",
+					fontSize:"17px",
+					padding:"20px"
+				}
+			})
 		})
-		.finally(()=>{setLoading(false)
+		.finally(()=>{
+			setLoading(false)
+			toast.dismiss(notification) // regardless of success or failure, dismiss the notification
 		})
 	}	
 
 	return (
 		<div className="flex h-screen flex-col lg:grid lg:grid-cols-10">
+			<Toaster position ="bottom-center"/> 
 			{/* /{left side} */}
 			<div className="lg:col-span-4 bg-gradient-to-br from-cyan-800 to-rose-500">
 				<div className="flex flex-col items-center justify-center py-2 lg:min-h-screen">
