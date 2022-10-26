@@ -109,12 +109,12 @@ function NftDropPage({collection}:Props) {
 		<div className="flex h-screen flex-col lg:grid lg:grid-cols-10">
 			<Toaster position ="bottom-center"/> 
 			{/* /{left side} */}
-			<div className="lg:col-span-4 bg-gradient-to-br from-cyan-800 to-rose-500">
+			<div className="lg:col-span-4 bg-gradient-to-br from-pink-300 to-blue-400">
 				<div className="flex flex-col items-center justify-center py-2 lg:min-h-screen">
-					<div className="rounded-xl bg-gradient-to-br from-yellow-400 to-purple-600 p-2">
+					<div className="rounded-xl bg-gradient-to-br from-white to-green-200 p-2">
 						<img className="w-44 rounded-xl object-cover lg:h-96 lg:w-72" src={urlFor(collection.previewImage).url()} alt="" />
 					</div>
-					<div className="space-y-2 p-5 text-center ">
+					<div className="space-y-2 p-5 text-center">
 						<h1 className="text-4xl font-bold text-white">{collection.nftCollectionName}</h1>
 						<h2 className="text-xl text-gray-300">{collection.description }</h2>
 					</div>
@@ -131,7 +131,7 @@ function NftDropPage({collection}:Props) {
 							Welcome to <span className="font-extrabold underline decoration-pink-600/50">ANDRE'S</span> NFT Marketplace
 						</h1>
 					</Link>
-					<button onClick={() => (address ? disconnect() : connectWithMetamask())} className="rounded-full bg-rose-400 px-4 py-2 text-xs font-bold text-white lg:px-5 lg:py-3 lg:text-base">
+					<button onClick={() => (address ? disconnect() : connectWithMetamask())} className="rounded-full bg-blue-400 px-4 py-2 text-xs font-bold text-white lg:px-5 lg:py-3 lg:text-base">
 						{address? 'Sign out' : 'Sign in'}
 					</button>
 				</header>
@@ -139,7 +139,7 @@ function NftDropPage({collection}:Props) {
 				<hr className="my-2 border"/>
 
 				{address && (
-					<p className="text-center text-sm text-rose-400">You're logged in with your wallet {address.substring(0,5)}...{address.substring(address.length - 5)}</p>
+					<p className="text-center text-sm text-blue-400">You're logged in with your wallet {address.substring(0,5)}...{address.substring(address.length - 5)}</p>
 				)}
 
 				{/* {Content} */}
